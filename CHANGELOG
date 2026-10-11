@@ -1,0 +1,17 @@
+1.2.0 (2026-10-11)
+
+- Initial public release (changes below are in comparison to aFewBits/stc-led-clock)
+- New: Flicker-Free display (156.25 Hz refresh rate and Dual-Edge Boundary Modulation)
+- New: Smooth Fade-In/Out when changing between Time, Temperature, Date, Day and Seconds display
+- New: Smoothly blinking colon dots in Time display mode, imitating the glow of incandescent light bulbs
+- New: Greatly improved auto-dimming, reacting smoothly to changes in ambient lighting conditions
+- New: Count-down timer (long-press S2 to enter, S1/S2 add minutes/seconds, both to reset to 00.00; auto start, long press S2 to leave)
+- New: Snooze Timer for Alarm (press S1 to snooze, S2 to cancel alarm)
+- New: Auto-rotation of the enabled display modes (Temperature, Date, Day of Week), configurable
+- New: Display hold time per mode (1-5 seconds) and frequency of auto-rotation per minute (0-3 times) configurable
+- New: Manual advance through the enabled modes is possible (Seconds display has been added to the end of them)
+- New: Year setting (displayed only in manual mode advance, before the Seconds display), automatically accounting for leap years
+- New: Leading zero display (9:00 vs. 09:00) now configurable via config menu
+- New: For the EU date format the dot after the month (DD.MM.) can be enabled, as this is usual e.g. in Germany
+- New: In 24-hour mode, the decimal point of the last digit is used to indicate whether Alarm is on
+- New: A fun little Snake animation on the top of the hour (or every half hour etc., selectable) or by long-press of S1
