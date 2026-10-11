@@ -21,7 +21,7 @@ Example images of such a clock:
 
 ## Clock Features
 
-These are the features of this clock firmware. Features added by me in this version are highlighed with "**NEW:**".
+These are the features of this clock firmware. Features added by me in this version (initial public release, v1.2.0) are highlighed with "**NEW:**".
 
 * Time display (12 and 24 hour modes)
 * Alarm (using the rather loud internal buzzer)
@@ -36,6 +36,7 @@ These are the features of this clock firmware. Features added by me in this vers
 * **NEW:** Flicker-Free display (156,25 Hz refresh rate and Dual-Edge Boundary Modulation)
 * **NEW:** Smooth Fade-In/Out when changing between Time, Temperature, Date, Day and Seconds display
 * **NEW:** Smoothly blinking colon dots in Time display mode, imitating the glow of incandescent light bulbs
+* **NEW:** Greatly improved auto-dimming, reacting smoothly to changes in ambient lighting conditions
 * **NEW:** Count-down timer (long-press S2 to enter, S1/S2 add minutes/seconds, both to reset to 00.00; auto start, long press S2 to leave)
 * **NEW:** Snooze Timer for Alarm (press S1 to snooze, S2 to cancel alarm)
 * **NEW:** Auto-rotation of the enabled display modes (Temperature, Date, Day of Week), configurable
