@@ -2,7 +2,7 @@
 
 This is a replacement firmware for Digital LED Clock DIY kits that are built around STC microcontrollers (these are uCs using the 8051 instruction set, but are much faster, as they use less cycles per instruction) and which can be found on various (mostly Chinese) sources.
 
-This project was originally based on the repository [stc-led-clock](https://github.com/aFewBits/stc-led-clock), to which all due credit shall hereby be given - thanks for all the foundation work!
+This project was originally based on the repository [aFewBits/stc-led-clock](https://github.com/aFewBits/stc-led-clock), to which all due credit shall hereby be given - thanks for all the foundation work!
 
 There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) anymore, ever! 😉
 
