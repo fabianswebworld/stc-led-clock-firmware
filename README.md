@@ -33,7 +33,7 @@ These are the features of this clock firmware. Features added by me in this vers
 * Temperature calibration
 * Auto-increment when setting times/alarms/etc. by holding the set key - no need to repeatedly press the same key
 * Support for "talking clock" that uses the NY3P065 sound chip in both 24 and 12 hour modes
-* **NEW:** Flicker-Free display (156,25 Hz refresh rate and Dual-Edge Boundary Modulation)
+* **NEW:** Flicker-Free display (156.25 Hz refresh rate and Dual-Edge Boundary Modulation)
 * **NEW:** Smooth Fade-In/Out when changing between Time, Temperature, Date, Day and Seconds display
 * **NEW:** Smoothly blinking colon dots in Time display mode, imitating the glow of incandescent light bulbs
 * **NEW:** Greatly improved auto-dimming, reacting smoothly to changes in ambient lighting conditions
