@@ -228,7 +228,7 @@ Press **Button 2** on `diSP` to enter settings for the display rotation:
 2. **Date Page:** Displays `dA on` or `dA oF`. Press Button 2 to toggle. Press Button 1 to advance.
 3. **Day of Week Page:** Displays `dy on` or `dy oF`. Press Button 2 to toggle. Press Button 1 to advance.
 4. **Auto-Rotation Cadence (`rot`):** Displays `rot0`, `rot1`, `rot2`, or `rot3` (see Section 5). Press Button 2 to cycle. Press Button 1 to advance.
-5. **Page Duration (`dur`):** Displays `dur1` to `dur5` (seconds to show each page in rotation). Press Button 2 to cycle. Press Button 1 to advance.
+5. **Page Duration (`dur`):** Displays `dur1` to `dur5` (duration in seconds that each page of the rotation is displayed). Press Button 2 to cycle. Press Button 1 to advance.
 6. **Animation Cadence (`Ani`):** Displays `Ani0` to `Ani5` (see Section 6). Press Button 2 to cycle. Press Button 1 to save and exit to clock.
 
 #### Menu 4: Configuration (`ConF`)
