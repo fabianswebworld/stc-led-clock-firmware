@@ -7,15 +7,15 @@ This project was originally based on this repository, to which all due credit sh
 
 There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) any more, ever! 😉
 
-Example images of such a Clock:
+Example images of such a clock:
 ![Image of LED clock with red digits showing the current time](doc/images/clock_example_cropped.jpg)
 
-More images:
+More images of this clock with the new firmware:
 [Time display](doc/images/clock_time.jpg)
 [Temperature display](doc/images/clock_temp.jpg)
 [Date display (German date format)](doc/images/clock_date_german.jpg)
 
-Example videos of this Clock with the new firmware in action:
+Example videos of this clock with the new firmware in action:
 TODO: youtube link 1 (auto-rotation)
 TODO: youtube link 2 (snake animation)
 
@@ -28,7 +28,7 @@ These are the features of this clock firmware. Features added by me in this vers
 * Time display (12 and 24 hour modes)
 * Alarm (using the rather loud internal buzzer)
 * Hourly chime (operating hour range programmable, on/off selectable)
-* Automatic Date and Day display (on/off selectable)
+* Automatic date and day of week display (on/off selectable)
 * Automatic Ambient Temperature display (°C/°F selectable, on/off selectable)
 * Seconds display with possibility to reset seconds to 00
 * Display Auto-Dim with programmable limits (auto-dim can be disabled using the limits)
