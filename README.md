@@ -15,7 +15,7 @@ Example images of such a clock:
 **Example videos** of this clock with the new firmware in action:
 [Display Auto-Rotation](https://www.youtube.com/watch?v=UyDxDATHdGQ), [Snake Animation](https://www.youtube.com/watch?v=N_o87PTVPpA)
 
-**User Manual**: See [Operation Instructions](#operation-instructions) (also available as [PDF](https://raw.githubusercontent.com/fabianswebworld/stc-led-clock-firmware/main/doc/operation_instructions.pdf)).
+**User Manual**: See [Operating Instructions](#operating-instructions) (also available as [PDF](doc/operation_instructions.pdf)).
 
 **Enjoy!**
 
@@ -51,7 +51,7 @@ These are the features of this clock firmware. Features added by me in this vers
 
 You'll need [SDCC](http://sdcc.sf.net) to build and [STC-ISP](http://www.stcmcudata.com/STCISP/stc-isp-15xx-v6.86D.zip) or [stcgal](https://github.com/grigorig/stcgal) to set the clock speed, processor hardware options and to flash the firmware. I personally recommend **stcgal**, it works very well and is free and open-source.
 
-**Quick Start:** For 99% of the DIY clock kits out there (using the STC15W408AS with 8KB of flash) you can use the readily-built `main.hex` file from this repository, flash it, and use your clock as described in the [Operation Instructions](#operation-instructions) (also available as [PDF](https://raw.githubusercontent.com/fabianswebworld/stc-led-clock-firmware/main/doc/operation_instructions.pdf)). Enjoy!
+**Quick Start:** For 99% of the DIY clock kits out there (using the STC15W408AS with 8KB of flash) you can use the readily-built `main.hex` file from this repository, flash it, and use your clock as described in the [Operating Instructions](#operating-instructions) (also available as [PDF](doc/operation_instructions.pdf)). Enjoy!
 
 **Important note:** Since the addition of all the above features increased code size to almost 8KB, this firmware replacement is _only_ suitable for clocks with 8KB microcontrollers, not for ones featuring only 4KB. This should not be a problem since all clocks I ever encountered on the market had the STC15W408AS mentioned above, but you should double-check.
 
@@ -93,7 +93,7 @@ Adjust the port (-p), processor type (-P), and path to your .hex file to your ne
 
 ---
 
-## Operation Instructions
+## Operating Instructions
 
 ### 1. Buttons and indicators
 
