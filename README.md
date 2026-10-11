@@ -2,22 +2,18 @@
 
 This is a replacement firmware for Digital LED Clock DIY kits that are built around STC microcontrollers (these are uCs using the 8051 instruction set, but are much faster, as they use less cycles per instruction) and which can be found on various (mostly Chinese) sources.
 
-This project was originally based on this repository, to which all due credit shall hereby be given - thanks for all the foundation work:
-[https://github.com/aFewBits/stc-led-clock](https://github.com/aFewBits/stc-led-clock)
+This project was originally based on the repository [stc-led-clock](https://github.com/aFewBits/stc-led-clock), to which all due credit shall hereby be given - thanks for all the foundation work!
 
-There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) any more, ever! 😉
+There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) anymore, ever! 😉
 
 Example images of such a clock:
 ![Image of LED clock with red digits showing the current time](doc/images/clock_example_cropped.jpg)
 
-More images of this clock with the new firmware:
-[Time display](doc/images/clock_time.jpg)
-[Temperature display](doc/images/clock_temp.jpg)
-[Date display (German date format)](doc/images/clock_date_german.jpg)
+**More images** of this clock with the new firmware:
+[Time display](doc/images/clock_time.jpg), [Temperature display](doc/images/clock_temp.jpg), [Date display (German date format)](doc/images/clock_date_german.jpg)
 
-Example videos of this clock with the new firmware in action:
-TODO: youtube link 1 (auto-rotation)
-TODO: youtube link 2 (snake animation)
+**Example videos** of this clock with the new firmware in action:
+[Display Auto-Rotation](https://www.youtube.com/watch?v=UyDxDATHdGQ), [Snake Animation](https://www.youtube.com/watch?v=N_o87PTVPpA)
 
 **Enjoy!**
 
