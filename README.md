@@ -8,11 +8,12 @@ This project was originally based on this repository, to which all due credit sh
 There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) any more, ever! 😉
 
 Example images of such a Clock:
-![Image of LED clock with red digits showing the current time](doc/images/clock_time.jpg)
+![Image of LED clock with red digits showing the current time](doc/images/clock_example_cropped.jpg)
 
-![Image of LED clock with red digits showing the current time](doc/images/clock_temp.jpg)
-
-![Image of LED clock with red digits showing the current time](doc/images/clock_date_german.jpg)
+More images:
+[Time display](doc/images/clock_time.jpg)
+[Temperature display](doc/images/clock_temp.jpg)
+[Date display (German date format)](doc/images/clock_date_german.jpg)
 
 Example videos of this Clock with the new firmware in action:
 TODO: youtube link 1 (auto-rotation)
