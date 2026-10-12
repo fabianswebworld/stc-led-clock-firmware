@@ -1,3 +1,11 @@
+1.2.1 (2026-10-13)
+
+- Improved: Snake animation can be disabled in code to save space (via an ifdef)
+- Improved: Code styling and comments
+- Improved: Leading Zero suppression is now on by default on factory reset
+- Fixed: Display refresh bug in Countdown mode
+- Fixed: Decimal point after month (DD.MM.) was always shown in EU format regardless of setting to DD.MM
+
 1.2.0 (2026-10-11)
 
 - Initial public release (changes below are in comparison to aFewBits/stc-led-clock)

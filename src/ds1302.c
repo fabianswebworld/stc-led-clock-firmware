@@ -279,6 +279,7 @@ L0100:
 
     putClock();
     configBitReg = clockRam.statusBits;
+    configBitRegEx = clockRam.statusBitsEx;
     putConfigRam();
 }
 

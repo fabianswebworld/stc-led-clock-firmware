@@ -4,7 +4,7 @@
 
 #define FW_VER_MAJOR  1
 #define FW_VER_MINOR  2
-#define FW_VER_REV    0
+#define FW_VER_REV    1
 
 //---------------------------------------------------------------------------
 
@@ -68,14 +68,15 @@
 // Begin Software Option configuration
 //---------------------------------------------------------------------------
 
-#define OPT_ALARM       TRUE    // TRUE to implement
-#define OPT_CHIME       TRUE    // FALSE removes
+#define OPT_ALARM       TRUE    // TRUE to implement alarm
+#define OPT_CHIME       TRUE    // TRUE to implement chime
 #define OPT_TEMP_DSP    TRUE
 #define OPT_DATE_DSP    TRUE
 #define OPT_DAY_DSP     TRUE
 #define OPT_DAY_ALPHA   TRUE    // display days as characters
 #define OPT_UNITS_GROUP FALSE   // use 12/F/MD or 24/C/DM groups
-#define OPT_BLANK_ZERO  TRUE    // T = 1:00 F = 01:00
+#define OPT_BLANK_ZERO  TRUE    // TRUE: leading zero configurable by menu, FALSE: leading zero always visible
+#define OPT_SNAKE       TRUE    // TRUE to include the Snake animation
 #define SNOOZE_TIME     5       // Snooze Time: 5 minutes
 
 // Set the default units for the clock

@@ -15,8 +15,10 @@ enum stateTable {
         stOptDay,
 #endif
         stOptYear,                      // manual Year display page
+#if OPT_SNAKE
         stSnake,                        // Snake animation (just for fun!) ;-)
-    // setup/config:
+#endif
+        // setup/config:
         scSet,
         scBeep,
         scDsp,
@@ -47,8 +49,10 @@ enum stateTable {
 #endif
         msRot,
         msDur,
+#if OPT_SNAKE
         msAni,
-    // cfg:
+#endif
+        // cfg:
 #if OPT_UNITS_GROUP
         msSetUnits,msEU,msUS,
 #else
@@ -122,7 +126,9 @@ enum text4Entry {
     txVer,
     txYear,
     txCtdn,
+#if OPT_SNAKE
     txAni
+#endif
     };
 
 enum led_position { H10,H01,M10,M01 };

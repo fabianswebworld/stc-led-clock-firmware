@@ -57,13 +57,17 @@ uint8_t actualTemp;               // result of ADC and transform
 
 uint8_t CathodeBuf[4];            // holds each digits segments (0 = on)
 volatile uint8_t aPos;            // cycles through 0-3 anode positions
-volatile uint8_t aOnTicks;
-volatile uint8_t aOffTicks;
 volatile uint8_t activeBright;    // current brightness during fading
 volatile uint8_t colonBright;     // current brightness for "incandescent" colon
 extern volatile uint8_t colonTick;
 
+// these are declared static here in global scope to avoid SDCC bugs regarding
+// local static bit variables using identical names
+
 static __bit zeroLocked = FALSE;  // helper for countdown both-button press to zero
+static __bit ctdnLastSecTick = 0; // helper for countdown seconds tick
+static __bit clockLastToggle = 0; // helper for updateClock
+static __bit colonLastToggle = 0; // helper for updateColonGlow
 
 // configuration for fading and the "simulated incandescent filament" colon
 
@@ -83,6 +87,7 @@ static __bit zeroLocked = FALSE;  // helper for countdown both-button press to z
 
 #define SNAKE_STEPS          34
 
+#if OPT_SNAKE
 typedef struct {
     uint8_t digit;
     uint8_t mask;
@@ -110,26 +115,18 @@ __idata uint8_t snakeTimer = 0;
 __idata uint8_t appleDigit = 0;
 __idata uint8_t appleDelay = 0;
 __idata uint8_t snakeLaps = 0;
-
+#endif
 
 //-----------------------------------------------------------------------------
+// Update the LED display using multiplexing and PWM
+// This routine is called from inside the ISR so it must be very quick.
 //-----------------------------------------------------------------------------
-// Update the LED display based on four variables.
 //
-// These are:
-//
-//      CathodeBuf[i] = 7 segment pattern to display, i = AnodePos
-//      aPos          = Current digit, 0.1.2.3 where 0 = LHS of display
-//      aOnTicks      = Number of Timer 0 ticks for the Anode to be low (active /on)
-//      aOffTicks     = Number of Timer 0 ticks for the Anode to be high (inactive/off)
-//
-// This routine is called from inside the ISR so be quick!!
-//
-
-volatile uint8_t tickCount = 0;
 
 void displayUpdateISR(void)
 {
+    static uint8_t tickCount = 0;
+
     // Dual-Edge Boundary Modulation
     // front pulse starts at tick 0 and grows forward
     // back pulse ends at tick 127 and grows backward
@@ -174,8 +171,6 @@ void displayUpdateISR(void)
 
 void updateClock()
 {
-    static __bit lastToggle = 0;
-
     dp0 = OFF;
 #if DP1_IS_COLON
     dp1 = _1hzToggle;           // toggle clock ':'
@@ -192,8 +187,8 @@ void updateClock()
 #endif
 
     // ONLY read the DS1302 when the second tick toggles!
-    if (_1hzToggle != lastToggle) {
-        lastToggle = _1hzToggle;
+    if (_1hzToggle != clockLastToggle) {
+        clockLastToggle = _1hzToggle;
         getClock();
     }
 
@@ -268,15 +263,14 @@ void fadeIn(void)
 
 void updateColonGlow(void)
 {
-    static __bit lastToggle = 0;
     static uint8_t lastTick = 0;
     static uint8_t upPace = 0;
     static uint8_t rampPace = 0;
     static uint8_t tailPace = 0;
 
     // Detect 1 Hz state change:
-    if (_1hzToggle != lastToggle) {
-        lastToggle = _1hzToggle;
+    if (_1hzToggle != colonLastToggle) {
+        colonLastToggle = _1hzToggle;
         upPace = 0;
         rampPace = 0;
         tailPace = 0;
@@ -363,6 +357,7 @@ void transitionTo(uint8_t nextState)
             displayHoursOn(); displayMinutesOn();
             break;
 
+#if OPT_SNAKE
         case stSnake:
             blankDisplay();
             snakeHead = 0;
@@ -372,9 +367,11 @@ void transitionTo(uint8_t nextState)
             appleDelay = 6;
             snakeLaps = 0;
             break;
+#endif
 
         case stClock:
         default:
+            getClock();
             updateClock();
             break;
     }
@@ -517,12 +514,14 @@ void displayFSM(void)
         updateClock();
         stateSwitchWithS1(scSet);
 
+#if OPT_SNAKE
         // Long S1: launch snake animation (easter egg...)
         if (checkAndClearLongS1()) {
             isAutoRotating = FALSE;
             transitionTo(stSnake);
             break;
         }
+#endif
 
         // Long S2: enter function menu (right now only: countdown timer)
         if (checkAndClearLongS2()) {
@@ -545,6 +544,7 @@ void displayFSM(void)
             }
         }
 
+#if OPT_SNAKE
         // Scheduled Snake animation trigger
         {
             // if chime is enabled, wait until sec == 01 so the chime finishes cleanly first
@@ -571,6 +571,7 @@ void displayFSM(void)
                 }
             }
         }
+#endif
 
         // Auto-rotation trigger (only if rotMode > 0):
         uint8_t rotMode = GET_ROT_MODE();
@@ -745,6 +746,7 @@ void displayFSM(void)
             clockRam.cdMin = cdMin;
             clockRam.cdSec = cdSec;
             putConfigRam();
+            ctdnLastSecTick = _1hzToggle;   // set to current state, prevents early decrement
             displayState = stCtdnRun;
         }
         break;
@@ -790,20 +792,21 @@ void displayFSM(void)
         }
 
         // decrement timer every 1 second
-        {
-            static __bit lastSecTick = 0;
-            if (_1hzToggle && !lastSecTick) {
+        if (_1hzToggle) {
+            if (!ctdnLastSecTick) {
+                ctdnLastSecTick = 1;    // prevent interrupt race condition
+
                 if (cdSec > 0) {
                     cdSec = decBCD(cdSec);
                 } else if (cdMin > 0) {
                     cdMin = decBCD(cdMin);
                     cdSec = 0x59;
                 } else {
-                    // Time is up!
                     displayState = stCtdnAlarm;
                 }
             }
-            lastSecTick = _1hzToggle;
+        } else {
+            ctdnLastSecTick = 0;
         }
         break;
 
@@ -833,6 +836,7 @@ void displayFSM(void)
 // Snake Animation
 // ###################################################################################
 
+#if OPT_SNAKE
     case stSnake:
         blankDisplay();
         dp0 = OFF; dp1 = OFF; dp2 = OFF; dp3 = OFF;
@@ -898,6 +902,7 @@ void displayFSM(void)
             transitionTo(stClock);
         }
         break;
+#endif
 
 // ###################################################################################
 // Setup / Config
@@ -1287,8 +1292,11 @@ void displayFSM(void)
         dp3 = OFF;
         segs[M01] = ledSegTB[GET_PAGE_DUR()];
 
+#if OPT_SNAKE
         stateSwitchWithS1(msAni);              // S1 moves to animation setting
-
+#else
+        stateSwitchWithS1(msExit);             // S1 saves to NVRAM and exits
+#endif
         if (checkAndClearS2()) {
             uint8_t dur = GET_PAGE_DUR() + 1;
             if (dur > 5) dur = 1;
@@ -1296,6 +1304,7 @@ void displayFSM(void)
         }
         break;
 
+#if OPT_SNAKE
     case msAni:
         setAllDigits(txAni);
         dp0 = OFF; dp1 = OFF; dp2 = OFF; dp3 = OFF;
@@ -1308,6 +1317,7 @@ void displayFSM(void)
             SET_ANI_MODE(a);
         }
         break;
+#endif
 
 // ###################################################################################
 // end of menu routines
@@ -1642,7 +1652,7 @@ void getDateVars()
     else {
         h = clockRam.date;
         m = clockRam.mon;
-        dp3 = ON;  // German / European format: DD.MM.
+        dp3 = DateDot2On ? ON : OFF;
     }
     dp1 = ON;
 }
@@ -1680,9 +1690,7 @@ void displayTemperature()
 
 void displayDate()
 {
-    dp1 = ON;
     dp2 = OFF;
-    dp3 = (!Select_MD && DateDot2On) ? ON : OFF;  // German / European dot on digit 4
     getDateVars();
     displayHoursOn();
     displayMinutesOn();
