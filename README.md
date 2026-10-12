@@ -4,18 +4,18 @@ This is a replacement firmware for Digital LED Clock DIY kits that are built aro
 
 This project was originally based on the repository [aFewBits/stc-led-clock](https://github.com/aFewBits/stc-led-clock), to which all due credit shall hereby be given - thanks for all the foundation work!
 
-There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) anymore, ever! 😉
+> There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) anymore, ever!!! 😉
 
 Example images of such a clock:
 ![Image of LED clock with red digits showing the current time](doc/images/clock_example_cropped.jpg)
 
 **More images** of this clock with the new firmware:
-[Time display](doc/images/clock_time.jpg), [Temperature display](doc/images/clock_temp.jpg), [Date display (German date format)](doc/images/clock_date_german.jpg)
+[Time display](doc/images/clock_time.jpg), [Temperature display](doc/images/clock_temp.jpg), [Date display (German date format)](doc/images/clock_date_german.jpg), [Snake Animation](doc/images/clock_snake.jpg)
 
 **Example videos** of this clock with the new firmware in action:
 [Display Auto-Rotation](https://www.youtube.com/watch?v=UyDxDATHdGQ), [Snake Animation](https://www.youtube.com/watch?v=N_o87PTVPpA)
 
-**User Manual**: See [Operating Instructions](#operating-instructions) (also available as [PDF](doc/operation_instructions.pdf)).
+**User Manual**: See [Operating Instructions](#operating-instructions) (also available as [PDF](https://raw.githubusercontent.com/fabianswebworld/stc-led-clock-firmware/main/doc/operation_instructions.pdf)).
 
 **Enjoy!**
 
@@ -52,7 +52,7 @@ These are the features of this clock firmware. Features added by me in this vers
 
 You'll need [SDCC](http://sdcc.sf.net) to build and [STC-ISP](http://www.stcmcudata.com/STCISP/stc-isp-15xx-v6.86D.zip) or [stcgal](https://github.com/grigorig/stcgal) to set the clock speed, processor hardware options and to flash the firmware. I personally recommend **stcgal**, it works very well and is free and open-source.
 
-**Quick Start:** For 99% of the DIY clock kits out there (using the STC15W408AS with 8KB of flash) you can use the readily-built `main.hex` file from this repository, flash it, and use your clock as described in the [Operating Instructions](#operating-instructions) (also available as [PDF](doc/operation_instructions.pdf)). Enjoy!
+**Quick Start:** For 99% of the DIY clock kits out there (using the STC15W408AS with 8KB of flash) you can use the readily-built `main.hex` file from this repository, flash it, and use your clock as described in the [Operating Instructions](#operating-instructions) (also available as [PDF](https://raw.githubusercontent.com/fabianswebworld/stc-led-clock-firmware/main/doc/operation_instructions.pdf)). Enjoy!
 
 **Important note:** Since the addition of all the above features increased code size to almost 8KB, this firmware replacement is _only_ suitable for clocks with 8KB microcontrollers, not for ones featuring only 4KB. This should not be a problem since all clocks I ever encountered on the market had the STC15W408AS mentioned above, but you should double-check.
 
@@ -262,11 +262,22 @@ The clock uses an onboard CR1220 3V coin cell battery to back up the DS1302 real
 * **Retained Data:** Timekeeping, leap-year calculations, alarm settings, rotation preferences, countdown presets, and sensor calibrations are retained in non-volatile battery-backed memory.
 * **Mains Reconnection:** When main power is disconnected and restored, the display immediately resumes operation with current time and customized settings intact without requiring reconfiguration.
 
+### 9. Factory reset
+
+To reset the clock to its factory defaults or to initialize in case of corrupt data in the RTC RAM, please follow these instructions:
+* Remove power
+* Press and hold both buttons (S1 and S2)
+* While holding the buttons, reapply power
+* After 1 second, release the buttons. The display will go blank and then resume displaying the clock and shortly afterwards, display the "Snake Animation" once.
+* The clock defaults to the following settings: 24-hour, DD.MM. format, leading zero suppression on, temperature unit °C, Snake Animation enabled on top of hour.
+
 ---
 
 ## Making changes to the code
 
 It is a simple matter to rebuild with the provided Makefile for SDCC. The Makefile originated with zerog2k's STC DIY-Clock project and was extended by aFewBits in the above-mentioned repository.
+
+The code heavily uses _#ifdefs_ so you can disable sections you don't need or your hardware doesn't support (e.g., the Snake animation or the Speech chip) to make more room in Flash for new ideas.
 
 If you want to make any significant code changes, you'll probably wish you had some debugging capability. If you have the STC15W408AS part in your clock, you're in luck as this processor has a second timer and UART. The code already has initialization in place for this UART if turned on in the global.h header file. SDCC supports a small footprint printf (printf_tiny) that only requires about 400 additional bytes of flash. The timer 2 default configuration is for 115200 baud, 8/1/N. On the Banggood board, the RX and TX have separate pins on a two pin connector, P3. Connection to a serial device is:
 
