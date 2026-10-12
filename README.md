@@ -6,7 +6,8 @@ This project was originally based on the repository [aFewBits/stc-led-clock](htt
 
 > There's **a lot** of improvements and new features in this new version, making this - in my humble opinion - the best firmware for those cheap clocks out there and there's no reason at all to use _any_ other firmware (especially not the stock firmware) anymore, ever!!! 😉
 
-Example images of such a clock:
+**Example image of such a clock:**
+
 ![Image of LED clock with red digits showing the current time](doc/images/clock_example_cropped.jpg)
 
 **More images** of this clock with the new firmware:
