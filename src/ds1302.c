@@ -26,7 +26,7 @@ __bit __at 0x7F Select_12;      // = 1 when 12 hr mode
 
 uint8_t __at 0x2E configBitRegEx;
 __bit   __at 0x70 BlankZeroOn;  // Bit 0 of 0x2E: Leading zero blanking On/Off
-__bit   __at 0x74 DateDot2On;    // Bit 4 of 0x2E: Trailing date dot for German/EU date ("31.12.")
+__bit   __at 0x74 DateDot2On;   // Bit 4 of 0x2E: Trailing date dot for German/EU date ("31.12.")
 
 void wait500()
 {
@@ -231,7 +231,8 @@ const uint8_t iniTable[] = {
         0x01,                               // day of week
         0x23,                               // year
         0x55,0xAA,                          // checksum bytes
-        kSelect_12+kSelect_MD+kSelect_FC,   // mode bits
+        kSelect_12+kSelect_MD+kSelect_FC+ \
+        kTempOn+kDateOn,                    // mode bits
         0x88,0x00,                          // 8:00am alarm
         0x89,                               // 9:00am chime start
         0xA6,                               // 6:00pm chime stop
@@ -247,7 +248,7 @@ const uint8_t iniTable[] = {
         0x01,                               // day of week
         0x23,                               // year
         0x55,0xAA,                          // checksum bytes
-        0x00,                               // mode bits
+        kTempOn+kDateOn,                    // mode bits
         0x08,0x00,                          // 08:00 alarm
         0x09,                               // 09:00 chime start
         0x18,                               // 18:00 chime stop
@@ -327,7 +328,7 @@ L110:
     if (dur < 1 || dur > 5) dur = 4;
     SET_ROT_CONFIG(rot, dur);
     if (GET_ANI_MODE() > 5) SET_ANI_MODE(0);
-    if ((clockRam.cdMin & 0xF0) > 0x50 || (clockRam.cdMin & 0x0F) > 0x09) clockRam.cdMin = 0x00;
+    if ((clockRam.cdMin & 0xF0) > 0x90 || (clockRam.cdMin & 0x0F) > 0x09) clockRam.cdMin = 0x00;
     if ((clockRam.cdSec & 0xF0) > 0x50 || (clockRam.cdSec & 0x0F) > 0x09) clockRam.cdSec = 0x59;
     configBitRegEx = clockRam.statusBitsEx;
 }

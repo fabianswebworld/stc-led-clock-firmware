@@ -40,8 +40,8 @@ __bit   timeChanged;              // write time to clock when set
 __bit   blankZero;                // set true to suppress leading zero in clock
 #endif
 
-__idata uint8_t cdMin = 0;        // last used countdown timer - minutes
-__idata uint8_t cdSec = 59;       // last used countdown timer - seconds
+__idata uint8_t cdMin = 0;        // countdown timer - minutes
+__idata uint8_t cdSec = 59;       // countdown timer - seconds
 __idata uint8_t cdInactivity = 0; // inactivity timer before starting cd timer
 
 uint8_t maskOnOff;                // set to 0x7F or 0xFF to blink decimal point
@@ -74,7 +74,6 @@ static __bit colonLastToggle = 0; // helper for updateColonGlow
 #define FADE_TARGET_TICKS   255   // Target fade duration in 1.5ms steps
 #define FADE_PAUSE_TICKS     40   // In 3ms steps, so 40 equals 120ms pause while dark
 #define COLON_LIGHTUP_SPEED   8   // Filament heat-up speed: higher = faster (1..10)
-#define COLON_DECAY_PERCENT  25   // Target level for initial cool-down (e.g. 50 = 50%)
 #define COLON_DECAY_SPEED    10   // Initial cool-down speed (1 = slowest, 10 = fastest)
 #define COLON_AFTERGLOW_DUR  17   // Afterglow duration: higher = longer
 
@@ -292,9 +291,9 @@ void updateColonGlow(void)
         }
     }
     else if (!_1hzToggle && colonBright > 0) {
-        uint8_t threshold = ((uint16_t)activeBright * COLON_DECAY_PERCENT) / 100;
+        uint8_t threshold = activeBright >> 2;  // 25%
 
-        // cool-down quickly to threshold (~15-30 ms of real time)
+        // cool-down quickly to 25% (~15-30 ms of real time)
         if (colonBright > threshold) {
             if (++rampPace >= (11 - COLON_DECAY_SPEED)) {
                 rampPace = 0;
@@ -373,73 +372,65 @@ void transitionTo(uint8_t nextState)
         default:
             getClock();
             updateClock();
+            checkAndClearLongS1();
+            checkAndClearLongS2();
             break;
     }
 
     fadeIn();
 }
 
+// Preprocessor routing: dynamically link each state to the next compiled state
+#if OPT_DAY_DSP
+  #define _NEXT_AFTER_DATE  stOptDay
+#else
+  #define _NEXT_AFTER_DATE  (isAuto ? stClock : stOptYear)
+#endif
+
+#if OPT_DATE_DSP
+  #define _NEXT_AFTER_TEMP  stOptDate
+#else
+  #define _NEXT_AFTER_TEMP  _NEXT_AFTER_DATE
+#endif
+
+#if OPT_TEMP_DSP
+  #define _NEXT_AFTER_CLOCK stOptTemp
+#else
+  #define _NEXT_AFTER_CLOCK _NEXT_AFTER_TEMP
+#endif
+
 // Go to next mode in manual and auto-rotation display
 // Single progression engine for both auto and manual mode:
 void advanceDisplay(__bit isAuto)
 {
-    uint8_t next = stClock;
+    uint8_t next = displayState;
 
-    if (displayState == stClock) {
-        if (!isAuto) {
-            next = stOptTemp;
-        } else {
-            // only auto-rotation skips disabled pages
+    do {
+        if (next == stClock)              next = _NEXT_AFTER_CLOCK;
 #if OPT_TEMP_DSP
-            if (TempOn) next = stOptTemp; else
+        else if (next == stOptTemp)       next = _NEXT_AFTER_TEMP;
 #endif
 #if OPT_DATE_DSP
-            if (DateOn) next = stOptDate; else
+        else if (next == stOptDate)       next = _NEXT_AFTER_DATE;
 #endif
 #if OPT_DAY_DSP
-            if (DowOn)  next = stOptDay;  else
+        else if (next == stOptDay)        next = isAuto ? stClock : stOptYear;
 #endif
-            next = stClock;
-        }
-    }
+        else if (next == stOptYear)       next = isAuto ? stClock : stClockSeconds;
+        else                              next = stClock;
+
+        // manual mode stops immediately; auto mode stops on enabled pages or stClock
+        if (!isAuto || next == stClock) break;
 #if OPT_TEMP_DSP
-    else if (displayState == stOptTemp) {
-        if (!isAuto) {
-            next = stOptDate;
-        } else {
-#if OPT_DATE_DSP
-            if (DateOn) next = stOptDate; else
-#endif
-#if OPT_DAY_DSP
-            if (DowOn)  next = stOptDay;  else
-#endif
-            next = stClock;
-        }
-    }
+        if (next == stOptTemp && TempOn) break;
 #endif
 #if OPT_DATE_DSP
-    else if (displayState == stOptDate) {
-        if (!isAuto) {
-            next = stOptDay;
-        } else {
-#if OPT_DAY_DSP
-            if (DowOn)  next = stOptDay;  else
-#endif
-            next = stClock;
-        }
-    }
+        if (next == stOptDate && DateOn) break;
 #endif
 #if OPT_DAY_DSP
-    else if (displayState == stOptDay) {
-        next = isAuto ? stClock : stOptYear;
-    }
+        if (next == stOptDay && DowOn) break;
 #endif
-    else if (displayState == stOptYear) {
-        next = isAuto ? stClock : stClockSeconds;
-    }
-    else if (displayState == stClockSeconds) {
-        next = stClock;
-    }
+    } while (1);
 
     if (next != displayState) {
         if (isAuto) {
@@ -453,6 +444,10 @@ void advanceDisplay(__bit isAuto)
         transitionTo(next);
     }
 }
+
+#undef _NEXT_AFTER_CLOCK
+#undef _NEXT_AFTER_TEMP
+#undef _NEXT_AFTER_DATE
 
 //----------------------------------------------------------------------------------------------//
 //-------  The monster state machine. All mode changing and display is done from here      -----//
@@ -591,7 +586,10 @@ void displayFSM(void)
                     triggerRotation = TRUE;
                 }
 
-                if (triggerRotation) {
+                // trigger if conditions are met and button S2 is not currently held down
+                // which prevents auto-rotation from starting while the user is about to
+                // enter the Function menu
+                if (triggerRotation && S2) {
                     advanceDisplay(TRUE);
                 }
             }
@@ -681,14 +679,14 @@ void displayFSM(void)
         break;
 
 // ###################################################################################
-// Function menu (only Ctdn for now)
+// Function menu (Countdown and Stopwatch)
 // ###################################################################################
 
     case msCtdnMenu:
         setAllDigits(txCtdn);
         dp0 = OFF; dp1 = OFF; dp2 = OFF; dp3 = OFF;
         isAutoRotating = FALSE;
-        stateSwitchWithS1(stClock);
+        stateSwitchWithS1(msStopMenu);
 
         if (checkAndClearS2()) {
             cdMin = clockRam.cdMin;
@@ -725,7 +723,7 @@ void displayFSM(void)
 
         // S1 increments minutes:
         if (checkAndClearS1()) {
-            cdMin = incrementMinutes(cdMin);
+            cdMin = incrementYear(cdMin);  // use incrementYear to allow up to 99 min
             cdInactivity = 20;
         }
 
@@ -746,7 +744,7 @@ void displayFSM(void)
             clockRam.cdMin = cdMin;
             clockRam.cdSec = cdSec;
             putConfigRam();
-            ctdnLastSecTick = _1hzToggle;   // set to current state, prevents early decrement
+            ctdnLastSecTick = _1hzToggle;  // set to current state, prevents early decrement
             displayState = stCtdnRun;
         }
         break;
@@ -832,6 +830,71 @@ void displayFSM(void)
         }
         break;
 
+    case msStopMenu:
+        setAllDigits(txStop);
+        dp0 = OFF; dp1 = OFF; dp2 = OFF; dp3 = OFF;
+        isAutoRotating = FALSE;
+
+        stateSwitchWithS1(stClock);     // S1 cycles back to the clock
+
+        if (checkAndClearS2()) {
+            h = 0;
+            m = 0;
+            displayState = stStopRun;
+        }
+        break;
+
+    case stStopRun:
+        {
+            static __idata uint8_t swTickAcc = 0;
+            static __idata uint8_t lastCt = 0;
+            static __bit swRun = 0;
+
+            dp0 = OFF; dp3 = OFF;
+            dp1 = OFF;
+            dp2 = (!swRun || (m < 0x50)) ? ON : OFF;  // top dot 1Hz blink when running
+
+            displayHoursOn();   // Renders seconds from h (00 to 99)
+            displayMinutesOn(); // Renders hundredths from m (00 to 99)
+
+            // S1: Start / Pause toggle
+            if (checkAndClearS1()) {
+                swRun = !swRun;
+                lastCt = colonTick;
+            }
+
+            // S2: Reset to 00.00 (only when paused)
+            if (checkAndClearS2() && !swRun) {
+                h = 0;
+                m = 0;
+                swTickAcc = 0;
+            }
+
+            // Long S2: Exit to Clock
+            if (checkAndClearLongS2()) {
+                swRun = 0;
+                transitionTo(stClock);
+                break;
+            }
+
+            if (swRun) {
+                if (colonTick != lastCt) {
+                    lastCt = colonTick;
+                    swTickAcc += 30;
+
+                    if (swTickAcc >= 100) {
+                        swTickAcc -= 100;
+                        m = incrementYear(m); // BCD 00 -> 99 hundredths
+                        // when hundredths hit 99 -> 00, increment seconds
+                        if (m == 0x00) {
+                            h = incrementYear(h); // BCD 00 -> 99 seconds
+                        }
+                    }
+                }
+            }
+        }
+        break;
+
 // ###################################################################################
 // Snake Animation
 // ###################################################################################
@@ -879,15 +942,9 @@ void displayFSM(void)
                 uint8_t hd = snakeTrack[snakeHead].digit;
                 uint8_t hs = snakeTrack[snakeHead].mask;
 
-                if (appleDigit == 0 && hd == 1 && hs == 0x08) {
+                if (hs == 0x08 && hd == (appleDigit == 2 ? 0 : appleDigit + 1)) {
+                    appleDigit = hd;
                     if (snakeLen < 8) snakeLen++;
-                    appleDigit = 1;                     // Spawn Apple 1
-                } else if (appleDigit == 1 && hd == 2 && hs == 0x08) {
-                    if (snakeLen < 8) snakeLen++;
-                    appleDigit = 2;                     // Spawn Apple 2
-                } else if (appleDigit == 2 && hd == 0 && hs == 0x08) {
-                    if (snakeLen < 8) snakeLen++;
-                    appleDigit = 0;                     // Spawn Apple 0
                 }
             }
 
@@ -1158,33 +1215,25 @@ void displayFSM(void)
 // msAlarmOff,msAlarmOn
 
     case msAlarmOff:
-        setMsgOff();
-        AlarmOn = FALSE;
-        stateSwitchExtendedWithS1(msChimeOn,txChime,ChimeOn);
-        stateSwitchWithS2(msAlarmOn);
-        break;
-
     case msAlarmOn:
-        setMsgOn();
-        AlarmOn = TRUE;
-        stateSwitchExtendedWithS1(msChimeOn,txChime,ChimeOn);
-        stateSwitchWithS2(msAlarmOff);
+        if (AlarmOn) setMsgOn(); else setMsgOff();
+        stateSwitchExtendedWithS1(msChimeOn, txChime, ChimeOn);
+        if (checkAndClearS2()) {
+            AlarmOn = !AlarmOn;
+            displayState = AlarmOn ? msAlarmOn : msAlarmOff;
+        }
         break;
 
 // ChimeOff,ChimeOn
 
     case msChimeOff:
-        setMsgOff();
-        ChimeOn = FALSE;
-        stateSwitchWithS1(msExit);
-        stateSwitchWithS2(msChimeOn);
-        break;
-
     case msChimeOn:
-        setMsgOn();
-        ChimeOn = TRUE;
+        if (ChimeOn) setMsgOn(); else setMsgOff();
         stateSwitchWithS1(msExit);
-        stateSwitchWithS2(msChimeOff);
+        if (checkAndClearS2()) {
+            ChimeOn = !ChimeOn;
+            displayState = ChimeOn ? msChimeOn : msChimeOff;
+        }
         break;
 
 // ###################################################################################
@@ -1195,29 +1244,19 @@ void displayFSM(void)
 
 #if OPT_TEMP_DSP
     case msDspTempOff:
-        setMsgOff();
-        TempOn = FALSE;
-#if OPT_DATE_DSP
-        stateSwitchExtendedWithS1(msDateOn,txDate,DateOn);
-#elif OPT_DAY_DSP
-        stateSwitchExtendedWithS1(msDayOn,txDay,DowOn);
-#else
-        stateSwitchWithS1(msRot);
-#endif
-        stateSwitchWithS2(msDspTempOn);
-        break;
-
     case msDspTempOn:
-        setMsgOn();
-        TempOn = TRUE;
+        if (TempOn) setMsgOn(); else setMsgOff();
 #if OPT_DATE_DSP
-        stateSwitchExtendedWithS1(msDateOn,txDate,DateOn);
+        stateSwitchExtendedWithS1(msDateOn, txDate, DateOn);
 #elif OPT_DAY_DSP
-        stateSwitchExtendedWithS1(msDayOn,txDay,DowOn);
+        stateSwitchExtendedWithS1(msDayOn, txDay, DowOn);
 #else
         stateSwitchWithS1(msRot);
 #endif
-        stateSwitchWithS2(msDspTempOff);
+        if (checkAndClearS2()) {
+            TempOn = !TempOn;
+            displayState = TempOn ? msDspTempOn : msDspTempOff;
+        }
         break;
 #endif
 
@@ -1225,25 +1264,17 @@ void displayFSM(void)
 
 #if OPT_DATE_DSP
     case msDateOff:
-        setMsgOff();
-        DateOn = FALSE;
-  #if OPT_DAY_DSP
-        stateSwitchExtendedWithS1(msDayOn,txDay,DowOn);
-  #else
-        stateSwitchWithS1(msRot);
-  #endif
-        stateSwitchWithS2(msDateOn);
-        break;
-
     case msDateOn:
-        setMsgOn();
-        DateOn = TRUE;
+        if (DateOn) setMsgOn(); else setMsgOff();
   #if OPT_DAY_DSP
-        stateSwitchExtendedWithS1(msDayOn,txDay,DowOn);
+        stateSwitchExtendedWithS1(msDayOn, txDay, DowOn);
   #else
         stateSwitchWithS1(msRot);
   #endif
-        stateSwitchWithS2(msDateOff);
+        if (checkAndClearS2()) {
+            DateOn = !DateOn;
+            displayState = DateOn ? msDateOn : msDateOff;
+        }
         break;
 #endif
 
@@ -1251,17 +1282,13 @@ void displayFSM(void)
 
 #if OPT_DAY_DSP
     case msDayOff:
-        setMsgOff();
-        DowOn = FALSE;
-        stateSwitchWithS1(msRot);               // S1 moves to rotation cadence setting
-        stateSwitchWithS2(msDayOn);
-        break;
-
     case msDayOn:
-        setMsgOn();
-        DowOn = TRUE;
+        if (DowOn) setMsgOn(); else setMsgOff();
         stateSwitchWithS1(msRot);               // S1 moves to rotation cadence setting
-        stateSwitchWithS2(msDayOff);
+        if (checkAndClearS2()) {
+            DowOn = !DowOn;
+            displayState = DowOn ? msDayOn : msDayOff;
+        }
         break;
 #endif
 
@@ -1558,6 +1585,8 @@ void displayFSM(void)
         while(userTimer100) ;           // just delay...
         checkAndClearS1();              // dump keybuf on the way out the door...
         checkAndClearS2();              // dump keybuf on the way out the door...
+        checkAndClearLongS1();          // also prevent long keypresses to statebleed
+        checkAndClearLongS2();          // also prevent long keypresses to statebleed
 #ifdef S3
         checkAndClearS3();              // dump keybuf on the way out the door...
 #endif
@@ -1575,26 +1604,29 @@ void displayFSM(void)
 
 void setAllDigits(uint8_t index)
 {
-    segs[H10] = textDesc4[(index << 2)];
-    segs[H01] = textDesc4[(index << 2)+1];
-    segs[M10] = textDesc4[(index << 2)+2];
-    segs[M01] = textDesc4[(index << 2)+3];
+    __code const uint8_t *p = &textDesc4[index << 2];
+    segs[H10] = p[0];
+    segs[H01] = p[1];
+    segs[M10] = p[2];
+    segs[M01] = p[3];
 }
 
 void setHourDigits(uint8_t index)
 {
-    segs[H10] = textDesc2[(index << 1)];
-    segs[H01] = textDesc2[(index << 1)+1];
+    __code const uint8_t *p = &textDesc2[index << 1];
+    segs[H10] = p[0];
+    segs[H01] = p[1];
     segs[M10] = 0xFF;
     segs[M01] = 0xFF;
 }
 
 void setMinuteDigits(uint8_t index)
 {
+    __code const uint8_t *p = &textDesc2[index << 1];
     segs[H10] = 0xFF;
     segs[H01] = 0xFF;
-    segs[M10] = textDesc2[(index << 1)];
-    segs[M01] = textDesc2[(index << 1)+1];
+    segs[M10] = p[0];
+    segs[M01] = p[1];
 }
 
 void setMsgOn()

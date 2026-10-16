@@ -131,6 +131,7 @@ void debounceSwitches(void)
 {
     static __bit bothWerePressed = FALSE;
     __bit isSetupMenu = (displayState >= scSet && displayState <= msShowVersion);
+    __bit s1Down      = isSetupMenu || (displayState == stStopRun);
 
     // suppress single-button releases if both were pressed together
     if (S1 == 0 && S2 == 0) {
@@ -154,13 +155,13 @@ void debounceSwitches(void)
         }
     } else {
         // only fire release if both buttons weren't held together
-        if (!isSetupMenu && !bothWerePressed && holdTimerS1 >= 3 && holdTimerS1 < LONG_PRESS_TICKS) {
+        if (!s1Down && !bothWerePressed && holdTimerS1 >= 3 && holdTimerS1 < LONG_PRESS_TICKS) {
             pressedS1 = TRUE;
         }
         holdTimerS1 = 0;
     }
 
-    if (isSetupMenu && stateQueueS1 == K_PRESSED) pressedS1 = TRUE;
+    if (s1Down && stateQueueS1 == K_PRESSED) pressedS1 = TRUE;
 
     // -------------------------------------------------------------
     // SW2 (Bottom Button)
@@ -213,6 +214,8 @@ __bit checkForRelease()
 {
     pressedS1 = FALSE;
     pressedS2 = FALSE;
+    longPressedS1 = FALSE;
+    longPressedS2 = FALSE;
     if ((stateQueueS1 == K_RELEASED) & (stateQueueS2 == K_RELEASED))
         return FALSE;
     else
@@ -307,6 +310,7 @@ void stateSwitchExtendedWithS1(uint8_t newState, uint8_t text2, __bit flag)
 void stateSwitchWithS2(uint8_t newState)
 {
     if (pressedS2){
+        while (!S2);
         pressedS2 = FALSE;
         displayState = newState;
     }
@@ -315,6 +319,7 @@ void stateSwitchWithS2(uint8_t newState)
 void stateSwitchExtendedWithS2(uint8_t newState, uint8_t text2, __bit flag)
 {
     if (pressedS2){
+        while (!S2);
         pressedS2 = FALSE;
         displayState = newState;
         if (!flag)

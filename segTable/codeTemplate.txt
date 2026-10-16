@@ -74,7 +74,8 @@ const uint8_t textDesc4[]= {
     <4F16>      // vEr
     <4F17>      // YEAr
     <4F18>      // Ctdn
-    <4F19>      // Ani
+    <4F19>      // Stop
+    <4F20>      // Ani
 #else
     <4N1>       // SET
     <4N2>       // BEEP
@@ -97,7 +98,8 @@ const uint8_t textDesc4[]= {
     <4N16>      // vEr
     <4N17>      // YEAr
     <4N18>      // Ctdn
-    <4N19>      // Ani
+    <4N19>      // Stop
+    <4N20>      // Ani
 #endif
 };
 

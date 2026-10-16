@@ -71,6 +71,8 @@ enum stateTable {
         stCtdnSet,                      // Countdown setting mode
         stCtdnRun,                      // Countdown active running
         stCtdnAlarm,                    // Countdown alarm ringing
+        msStopMenu,                     // "StoP" function entry
+        stStopRun,                      // Stopwatch active running
     // exit for all
         msExit
 };
@@ -126,6 +128,7 @@ enum text4Entry {
     txVer,
     txYear,
     txCtdn,
+    txStop,
 #if OPT_SNAKE
     txAni
 #endif
@@ -164,6 +167,8 @@ void setAllDigits(uint8_t);
 void setMsgOn();
 void setMsgOff();
 void setDayOfWeek();
+
+void transitionTo(uint8_t nextState);
 
 uint8_t incrementHours(uint8_t);
 uint8_t incrementMinutes(uint8_t);

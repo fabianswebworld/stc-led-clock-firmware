@@ -44,6 +44,9 @@ int main()
     if (checkForReset()){
         initColdStart();    // reset clock when both switches down @ powerup
         while (checkForRelease()) ;
+#if OPT_SNAKE
+        transitionTo(stSnake);
+#endif
     }
 #if TEST_DEFAULTS
     initColdStart();        // reset everything everytime for testing on powerup
