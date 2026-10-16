@@ -1,3 +1,12 @@
+1.3.0 (2026-10-16)
+
+ - New: Added Stopwatch function, counting seconds and hundredths up to 99:99
+ - Improved: Countdown timer now allows for counting from up to 99:59 (instead of 59:59)
+ - Improved: Many code optimizations to free up space in flash for new features
+ - Improved: After factory reset, automatic Temperature and Date display are on by default
+ - Improved: Minor improvements in setup menu and manual display page cycling
+ - Fixed: Snake animation not always shown upon factory reset
+
 1.2.1 (2026-10-13)
 
 - Improved: Snake animation can be disabled in code to save space (via an ifdef)
